@@ -27,10 +27,12 @@ If you are using your own data, we recommend you follow these steps:
 
 ## Model Training 
 Run the command as follows:
+
 `python train.py -exp_name SCOPE -data ../data/train.csv -save_folder ../save_model/`
 
 ## Model Testing
 Run the command as follows:
+
 `python val_test.py -data ../data/test.csv -save_model_path ../save_model/scope_model`
 
 
