@@ -5,6 +5,7 @@ from torch.utils.data import DataLoader
 from SCOPE_model import model
 import torch_geometric as pyg
 from utils import SP,SN,FDR,ACC,MCC
+import argparse
 
 torch.multiprocessing.set_sharing_strategy('file_system')
 
@@ -48,18 +49,23 @@ def collat_fn(batch):
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument("data", help="your test set path")
+    parser.add_argument("save_model_path", help="saved model path")
+    args = parser.parse_args()
+
     test_params = {'batch_size': 64,
               'shuffle': False,
               'num_workers': 1}
     device = 'cuda'
-    test_data_path = "../data/test.csv"
+    test_data_path = args.data
 
     test_data_set = protein_dataset(test_data_path,maxlen=50,pos_dim=128)
     test_generator = DataLoader(test_data_set, collate_fn=collat_fn, **test_params)
     model = model(feat_dim=128,trans_layer_num=12).to(device)
     df = pd.read_csv(test_data_path)
     model.load_state_dict(
-        torch.load('../save_model/scope_model.ckpt', map_location=device),
+        torch.load(args.save_model_path, map_location=device),
         strict=True)
 
     model.eval()

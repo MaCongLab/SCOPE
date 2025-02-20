@@ -60,14 +60,20 @@ def collat_fn(batch):
 
 
 if __name__ == '__main__':
-    writer = SummaryWriter(f'SCOPE')
+    parser = argparse.ArgumentParser()
+    parser.add_argument("exp_name", help="name of the experiment")
+    parser.add_argument("data", help="your train set path")
+    parser.add_argument("save_folder", help="save model path")
+    args = parser.parse_args()
+
+    writer = SummaryWriter(f'{args.exp_name}')
     params = {'batch_size': 128,
               'shuffle': True,
               'num_workers':6}
     device = 'cuda'
     epochs = 500
-    train_data_path = f"../data/train.csv"
-    save_folder = '../save_model/'
+    train_data_path = args.data
+    save_folder = args.save_folder
     if not os.path.exists(save_folder):
         os.makedirs(save_folder)
 
