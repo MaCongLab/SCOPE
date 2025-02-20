@@ -1,0 +1,1 @@
+This directory put the predicted 3D structure (PDB files)
