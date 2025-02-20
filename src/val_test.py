@@ -1,21 +1,10 @@
-import os
-import shutil
-
-import numpy as np
 import pandas as pd
 import torch
-from torch import nn
 from Dataset import protein_dataset
 from torch.utils.data import DataLoader
-from torch.optim.lr_scheduler import ExponentialLR
-from torch.utils.tensorboard import SummaryWriter
-from SCOPE_model import Toxin_model
-from tqdm import tqdm
+from SCOPE_model import model
 import torch_geometric as pyg
 from utils import SP,SN,FDR,ACC,MCC
-from sklearn.metrics import RocCurveDisplay,PrecisionRecallDisplay
-import argparse
-import matplotlib.pyplot as plt
 
 torch.multiprocessing.set_sharing_strategy('file_system')
 
@@ -53,14 +42,12 @@ def collat_fn(batch):
     batch_aac2_prop = torch.vstack(batch_aac2_prop_lst)
     batch_aac_pair = torch.vstack(batch_pair_lst)
     batch_label = torch.tensor(batch_label_lst)
-    # batch_bond_graph = pyg.data.Batch.from_data_list(batch_bond_graph_lst)
     return batch_seq, batch_pad_mask, batch_seq_len, batch_graph,batch_graph_3d,batch_aac_prop_lst,batch_aac2_prop,batch_aac_pair,batch_label
 
 
 
 
 if __name__ == '__main__':
-    # shutil.rmtree('pep_toxin')
     test_params = {'batch_size': 64,
               'shuffle': False,
               'num_workers': 1}
@@ -69,7 +56,7 @@ if __name__ == '__main__':
 
     test_data_set = protein_dataset(test_data_path,maxlen=50,pos_dim=128)
     test_generator = DataLoader(test_data_set, collate_fn=collat_fn, **test_params)
-    model = Toxin_model(feat_dim=128,trans_layer_num=12).to(device)
+    model = model(feat_dim=128,trans_layer_num=12).to(device)
     df = pd.read_csv(test_data_path)
     model.load_state_dict(
         torch.load('../save_model/scope_model.ckpt', map_location=device),

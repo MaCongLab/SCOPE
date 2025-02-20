@@ -29,11 +29,9 @@ class protein_dataset(torch.utils.data.Dataset):
 
     def _get_sinusoid_encoding_table(self,n_position, d_hid):
         def get_position_angle_vec(position):
-            # this part calculate the position In brackets
             return [position / np.power(self.maxlen, 2 * (hid_j // 2) / d_hid) for hid_j in range(d_hid)]
 
         sinusoid_table = np.array([get_position_angle_vec(pos_i) for pos_i in range(n_position)])
-        # [:, 0::2] are all even subscripts, is dim_2i
         sinusoid_table[:, 0::2] = np.sin(sinusoid_table[:, 0::2])  # dim 2i
         sinusoid_table[:, 1::2] = np.cos(sinusoid_table[:, 1::2])  # dim 2i+1
 
@@ -79,9 +77,5 @@ class protein_dataset(torch.utils.data.Dataset):
         tmp_seq = tmp_seq+[20]*(self.maxlen-len(tmp_seq))
         tmp_seq = torch.tensor(tmp_seq,dtype=torch.long)
         tmp_label = tmp_label
-
-        # tmp_pssm_tensor = read_pssm_files(f'../data/pssms_10/{tmp_id}.pssm',seq_len)
-        # tmp_mol_describ = torch.tensor(self.mol_descript.loc[tmp_id,:],dtype=torch.float)
-
 
         return tmp_seq,padding_mask,seq_len_t,tmp_graph,tmp_graph_3d,tmp_aac_prop,tmp_aac2_prop,aac_pair,tmp_label

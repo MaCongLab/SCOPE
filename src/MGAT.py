@@ -55,8 +55,6 @@ class MGAT(MessagePassing):
         self.edge_dim = edge_dim
         self.fill_value = fill_value
 
-        # In case we are operating in bipartite graphs, we apply separate
-        # transformations 'lin_src' and 'lin_dst' to source and target nodes:
         if isinstance(in_channels, int):
             self.lin_src = Linear(in_channels, heads * out_channels,
                                   bias=False, weight_initializer='glorot')
@@ -67,9 +65,6 @@ class MGAT(MessagePassing):
             self.lin_dst = Linear(in_channels[1], heads * out_channels, False,
                                   weight_initializer='glorot')
 
-        # The learnable parameters to compute attention coefficients:
-        # self.att_src = Linear(torch.Tensor(1, heads, out_channels))
-        # self.att_dst = Parameter(torch.Tensor(1, heads, out_channels))
 
         if edge_dim is not None:
             self.lin_edge = Linear(edge_dim, heads * out_channels, bias=False,
@@ -100,10 +95,7 @@ class MGAT(MessagePassing):
         self.out_ln.reset_parameters()
         if self.lin_edge is not None:
             self.lin_edge.reset_parameters()
-        # kaiming_uniform_(self.att_src)
-        # kaiming_uniform_(self.att_dst)
         if self.att_edge is not None:
-        #     kaiming_uniform_(self.att_edge.weight)
             self.att_edge.reset_parameters()
         zeros(self.bias)
 
@@ -115,11 +107,6 @@ class MGAT(MessagePassing):
 
         x = self.lin_src(x).view(-1, H, C)
 
-        # Next, we compute node-level attention coefficients, both for source
-        # and target nodes (if present):
-        # alpha_src = (x_src * self.att_src).sum(dim=-1)
-        # alpha_dst = None if x_dst is None else (x_dst * self.att_dst).sum(-1)
-        # alpha = (alpha_src, alpha_dst)
 
         if self.add_self_loops:
             num_nodes = x.size(0)
@@ -131,7 +118,6 @@ class MGAT(MessagePassing):
 
         alpha,edge_feat = self.edge_updater(edge_index, alpha=x, edge_attr=edge_attr)
 
-        # propagate_type: (x: OptPairTensor, alpha: Tensor)
         out = self.propagate(edge_index, x=x, alpha=alpha, size=size,edge_feat=edge_feat)
 
         if self.concat:
@@ -164,9 +150,7 @@ class MGAT(MessagePassing):
     def edge_update(self, alpha_j: Tensor, alpha_i: OptTensor,
                     edge_attr: OptTensor, index: Tensor, ptr: OptTensor,
                     size_i: Optional[int]):
-        # Given edge-level attention coefficients for source and target nodes,
-        # we simply need to sum them up to "emulate" concatenation:
-        # alpha = alpha_j if alpha_i is None else alpha_j + alpha_i
+
         if edge_attr is not None and self.lin_edge is not None:
             edge_attr = self.lin_edge(edge_attr)
             edge_attr = edge_attr.view(-1, self.heads, self.out_channels)
@@ -174,11 +158,7 @@ class MGAT(MessagePassing):
         else:
             total_feat = torch.concat([alpha_i, alpha_j], dim=-1)
         total_feat = self.att_edge(total_feat)
-        # total_feat = F.dropout(total_feat, p=self.dropout, training=self.training)
-        # alpha = total_feat.sum(dim=-1)
-        # total_feat = F.leaky_relu(total_feat, self.negative_slope)
         alpha = softmax(total_feat, index, ptr, size_i)
-        # alpha = F.dropout(alpha, p=self.dropout, training=self.training)
         return alpha,edge_attr
 
     def message(self, x_j: Tensor, alpha: Tensor,edge_feat:Tensor) -> Tensor:
