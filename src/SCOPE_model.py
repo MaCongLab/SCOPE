@@ -7,7 +7,7 @@ from torch_geometric.nn import aggr
 from MGAT import MGAT
 import numpy as np
 
-class Toxin_model(torch.nn.Module):
+class model(torch.nn.Module):
 
     def __init__(self,feat_dim,trans_layer_num):
         super().__init__()
@@ -48,9 +48,7 @@ class Toxin_model(torch.nn.Module):
             nn.BatchNorm2d(feat_dim),
             self.activation,
         )
-        # self.seq_2pcnn_norm = nn.LayerNorm(feat_dim)
 
-        # self.seq_acc_pair_bn = nn.BatchNorm2d(1)
         self.pair_cnn = nn.Sequential(
             nn.Conv2d(in_channels=94+128, out_channels=128, kernel_size=(1,1)),
             self.activation,
@@ -77,7 +75,6 @@ class Toxin_model(torch.nn.Module):
             self.activation
         )
 
-        # self.aac_emb = nn.Embedding(20,embedding_dim=feat_dim)
         self.lstm1 = nn.LSTM(input_size=self.p_dim,hidden_size=feat_dim,num_layers=3,bidirectional=True,batch_first=True)
         self.lstm2 = nn.LSTM(input_size=feat_dim, hidden_size=feat_dim, num_layers=3, bidirectional=True,
                              batch_first=True)
@@ -93,7 +90,6 @@ class Toxin_model(torch.nn.Module):
             self.activation,
         )
 
-        # self.dropout1 = nn.Dropout(0.1)
         self.agg1 = aggr.MeanAggregation()
         self.transformer_layers = nn.ModuleList()
         for i in range(self.trans_layer_num):
@@ -110,39 +106,22 @@ class Toxin_model(torch.nn.Module):
             self.activation
         )
         self.gatlayer1 = MGAT(in_channels=[feat_dim,feat_dim],out_channels=feat_dim,edge_dim=feat_dim)
-        # self.gatlayer1_norm = pygnn.GraphNorm(feat_dim)
         self.gatlayer2 = MGAT(in_channels=[feat_dim,feat_dim], out_channels=feat_dim, edge_dim=feat_dim)
-        # self.gatlayer2_norm =  pygnn.GraphNorm(feat_dim)
         self.gatlayer3 = MGAT(in_channels=[feat_dim,feat_dim],out_channels=feat_dim, edge_dim=feat_dim)
-        # self.gatlayer3_norm = pygnn.GraphNorm(feat_dim)
         self.gatlayer4 = MGAT(in_channels=[feat_dim, feat_dim], out_channels=feat_dim, edge_dim=feat_dim)
-        # self.gatlayer4_norm = pygnn.GraphNorm(feat_dim)
         self.gatlayer5 = MGAT(in_channels=[feat_dim, feat_dim], out_channels=feat_dim, edge_dim=feat_dim)
-        # self.gatlayer5_norm = pygnn.GraphNorm(feat_dim)
         self.gat2d_ln =  self.gat_ln = nn.Sequential(
                             nn.Linear(5*feat_dim, feat_dim),
                             self.activation
                         )
 
-
-        # self.gat_ln = nn.Sequential(
-        #     nn.Linear(2*feat_dim, feat_dim),
-        #     # nn.BatchNorm1d(feat_dim),
-        #     self.activation
-        # )
-
         self.atom3d_embedding = nn.Embedding(num_embeddings=4, embedding_dim=feat_dim)
         self.bond3d_embedding = nn.Embedding(num_embeddings=3, embedding_dim=feat_dim)
         self.sec_stru_embedding = nn.Embedding(8,embedding_dim=64)
         self.gat3dlayer1 = MGAT(in_channels=[feat_dim+64,feat_dim+64], out_channels=feat_dim, edge_dim=feat_dim,heads=2)
-        # self.gat3dlayer1_norm = pygnn.GraphNorm(2*feat_dim)
         self.gat3dlayer2 = MGAT(in_channels=[2*feat_dim,2*feat_dim], out_channels=feat_dim, edge_dim=feat_dim,heads=2)
-        # self.gat3dlayer2_norm = pygnn.GraphNorm(2*feat_dim)
         self.gat3dlayer3 = MGAT(in_channels=[2*feat_dim,2*feat_dim], out_channels=feat_dim, edge_dim=feat_dim,heads=2)
-        # self.gat3dlayer3_norm = pygnn.GraphNorm(2*feat_dim)
         self.gat3dlayer4 = MGAT(in_channels=[2 * feat_dim,2*feat_dim], out_channels=feat_dim, edge_dim=feat_dim, heads=2)
-        # self.gat3dlayer4_norm = pygnn.GraphNorm(2 * feat_dim)
-        # self.global3d_trans1 = Global_transformer(feature_dim=2*feat_dim, device=device)
 
 
 
@@ -168,7 +147,6 @@ class Toxin_model(torch.nn.Module):
             self.activation
         )
 
-        # self.att = sel_att(feat_dim=feat_dim)
         self.trans_out_ln = nn.Sequential(
             nn.Linear(feat_dim,feat_dim),
             nn.BatchNorm1d(feat_dim),
@@ -206,24 +184,13 @@ class Toxin_model(torch.nn.Module):
             nn.Linear(64, 2)
         )
 
-        # self.target_para = nn.Parameter(data=torch.zeros(64))
-        # self.init_param()
-        # print(self.aac_index_emb.weight)
-
-    # def init_param(self):
-    #     for m in self.modules():
-    #         if isinstance(m, (nn.Conv2d)):
-    #             nn.init.xavier_uniform_(m.weight)
-
     def _get_sinusoid_encoding_table(self,n_position, d_hid):
         def get_position_angle_vec(position):
-            # this part calculate the position In brackets
             return [position / np.power(10000, 2 * (hid_j // 2) / d_hid) for hid_j in range(d_hid)]
 
         sinusoid_table = np.array([get_position_angle_vec(pos_i) for pos_i in range(n_position)])
-        # [:, 0::2] are all even subscripts, is dim_2i
-        sinusoid_table[:, 0::2] = np.sin(sinusoid_table[:, 0::2])  # dim 2i
-        sinusoid_table[:, 1::2] = np.cos(sinusoid_table[:, 1::2])  # dim 2i+1
+        sinusoid_table[:, 0::2] = np.sin(sinusoid_table[:, 0::2])
+        sinusoid_table[:, 1::2] = np.cos(sinusoid_table[:, 1::2])
 
         return torch.FloatTensor(sinusoid_table).unsqueeze(0).cuda()
 
@@ -281,12 +248,7 @@ class Toxin_model(torch.nn.Module):
         atom_emb5 = self.activation(atom_emb5)
         total_graph2d_emb = torch.concat([atom_emb1,atom_emb2,atom_emb3,atom_emb4,atom_emb5],dim=-1)
         total_graph2d_emb = self.gat2d_ln(total_graph2d_emb)
-        # atom_emb3 = self.global_trans1(atom_emb3, batch_graph.batch, seq_emb.shape[0])
-
-
         atom_emb5_out = self.agg1(total_graph2d_emb, index=batch_graph.batch)
-        # atom_emb5_out = self.gat_ln(atom_emb5_out)
-
 
         sec_stru_emb = self.sec_stru_embedding(batch_3d_graph['sec_stru_type'])
         atom_3d_emb = self.atom3d_embedding(batch_3d_graph['atom_type'])
@@ -320,7 +282,6 @@ class Toxin_model(torch.nn.Module):
         aac_emb_cnn_lstm1 = torch.flatten(aac_emb_cnn_lstm1, start_dim=1)
         aac_emb_cnn_lstm1 = self.lstm2_ln(aac_emb_cnn_lstm1)
 
-        # trans_emb = self.dropout1(trans_emb)
         for trans_layer in self.transformer_layers:
             trans_emb = trans_layer(trans_emb,src_key_padding_mask=pad_mask_batch)
         trans_emb[pad_mask_batch] = 0
