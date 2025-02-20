@@ -72,7 +72,7 @@ if __name__ == '__main__':
     model = Toxin_model(feat_dim=128,trans_layer_num=12).to(device)
     df = pd.read_csv(test_data_path)
     model.load_state_dict(
-        torch.load('../save_model/var_model_ep441_acc_0.9586206896551724.ckpt', map_location=device),
+        torch.load('../save_model/scope_model.ckpt', map_location=device),
         strict=True)
 
     model.eval()
