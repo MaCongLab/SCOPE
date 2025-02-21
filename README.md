@@ -2,7 +2,7 @@
 
 This repository is the official code of SCOPE: A 3D Structure-Based Peptide Cytotoxicity Prediction Framework
 
-![overview](https://github.com/MaCongLab/SCOPE/blob/main/overview.pdf)
+![image](https://github.com/MaCongLab/SCOPE/blob/main/overview.jpg)
 
 ## Data preprocess
 In SCOPE, the only preprocess required is predicting the 3D structure of peptides by Alphafold2 and preparing the 3D graphs.
