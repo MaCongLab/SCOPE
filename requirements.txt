@@ -1,0 +1,10 @@
+Bio==1.7.1
+biopython==1.78
+numpy==1.23.4
+pandas==2.0.3
+rdkit==2023.9.6
+ripser==0.6.8
+scikit_learn==1.0.2
+torch==2.2.2
+torch_geometric==2.6.1
+tqdm==4.65.0
